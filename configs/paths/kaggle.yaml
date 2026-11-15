@@ -1,0 +1,8 @@
+# Chemins sur Kaggle : dataset en lecture seule, sorties dans /kaggle/working.
+data_dir: ${oc.env:HAPPYCITY_DATA_DIR,/kaggle/input/happycity-data}
+raw_dir: ${.data_dir}/raw
+interim_dir: ${.data_dir}/interim
+processed_dir: ${.data_dir}/processed
+dataset_dir: ${.processed_dir}/dataset   # jeu compact d'entraînement (make-dataset)
+boundaries_dir: ${.data_dir}/boundaries
+experiments_dir: ${oc.env:HAPPYCITY_EXPERIMENTS_DIR,/kaggle/working/experiments}

@@ -1,0 +1,48 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.999847922900107,
+              31.63126886945357
+            ],
+            [
+              -7.999650133252347,
+              31.64974376376129
+            ],
+            [
+              -8.021247413759184,
+              31.649911209833952
+            ],
+            [
+              -8.021440934861856,
+              31.631436195322095
+            ],
+            [
+              -7.999847922900107,
+              31.63126886945357
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "gueliz",
+        "method": "manual_square_around_osm_anchor",
+        "anchor": "node/595960397 (place=suburb, Guéliz)",
+        "note": "Au nord de l'avenue Hassan II (gare), qui sépare Guéliz de l'Hivernage.",
+        "utm_crs": "EPSG:32629",
+        "utm_bounds": [
+          592800.0,
+          3500000.0,
+          594848.0,
+          3502048.0
+        ]
+      }
+    }
+  ]
+}

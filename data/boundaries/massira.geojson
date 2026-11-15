@@ -1,0 +1,48 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -8.05578331702648,
+              31.626281722695577
+            ],
+            [
+              -8.055596624462275,
+              31.644756938662947
+            ],
+            [
+              -8.077193106151732,
+              31.64491489651382
+            ],
+            [
+              -8.077375530950546,
+              31.626439567141603
+            ],
+            [
+              -8.05578331702648,
+              31.626281722695577
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "massira",
+        "method": "manual_square_around_osm_anchor",
+        "anchor": "node/2255736116 (Massira2), node/3942697014 (Massira 3)",
+        "note": "Couvre Massira 2 et 3 ; Massira 1 n'a pas de repère OSM.",
+        "utm_crs": "EPSG:32629",
+        "utm_bounds": [
+          587500.0,
+          3499400.0,
+          589548.0,
+          3501448.0
+        ]
+      }
+    }
+  ]
+}

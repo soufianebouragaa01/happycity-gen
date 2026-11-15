@@ -1,0 +1,175 @@
+# Corpus : Marrakech, 4 quartiers. Justifications : docs/decisions.md, docs/osm_rules.md.
+source: mixed            # real | synthetic | mixed  (bascule J1 : passer à "synthetic")
+city: Marrakech
+crs: EPSG:32629          # UTM zone 29N (métrique)
+
+districts:
+  # OSM n'a aucune limite exploitable pour ces quartiers (docs/boundaries.md) :
+  # zones d'étude manuelles, générées par scripts/make_boundaries.py.
+  - {name: gueliz, osm_name: "Guéliz", boundary_file: gueliz.geojson}
+  - {name: hivernage, osm_name: "Hivernage", boundary_file: hivernage.geojson}
+  - {name: massira, osm_name: "Massira", boundary_file: massira.geojson}
+  - {name: mabrouka, osm_name: "Mabrouka", boundary_file: mabrouka.geojson}
+
+tile:
+  size_px: 128
+  m_per_px: 8.0          # 128 × 8 m = 1024 m ; 400 m = 50 px
+
+buffer_m: 400            # contexte réseau / espaces verts autour de chaque tuile
+access_radius_m: 400
+
+extraction:
+  margin_m: 500          # marge d'extraction autour d'une zone (≥ buffer_m)
+  source: pbf            # pbf (extrait Geofabrik daté, hors ligne) | overpass (API publique)
+  pbf_url: https://download.geofabrik.de/africa/morocco-latest.osm.pbf
+  pbf_file: morocco-latest.osm.pbf   # dans paths.raw_dir/osm/
+  overpass_url: https://overpass-api.de/api
+  user_agent: "happycity-gen/0.1 (academic research)"
+  timeout_s: 300
+  max_retries: 6        # serveur public saturé : attente exponentielle
+  retry_base_s: 30       # 30 s, 60 s, 120 s…
+
+# Canaux rastérisés de la carte M (ordre fixe). R (parcelles candidates) est séparé.
+# Le canal dérivé « unserved_origins » (origines sans accès avant aménagement) est
+# ajouté aux tuiles par « happycity access » (module de métriques), après ces canaux.
+channels:
+  - residential_buildings   # fraction de pixel couverte (suréchantillonnage)
+  - other_buildings
+  - walk_network            # 1 si un tronçon piéton traverse le pixel
+  - public_green            # espaces verts comptés
+  - obstacles
+  - origins                 # nombre d'origines résidentielles dans le pixel
+
+raster:
+  supersample: 4            # rastérisation à 2 m/px puis moyenne → fraction de couverture
+  real_stride_m: 512        # pas des tuiles réelles (chevauchantes) dans une zone de 2048 m
+  min_origins: 30           # tuile écartée en dessous (pas assez résidentielle)
+  workers: 6                # processus parallèles (synthèse, rastérisation)
+
+buildings:
+  residential_values: [residential, apartments, house, detached, semidetached_house,
+                       terrace, dormitory, bungalow]
+  non_residential_values: [commercial, retail, industrial, office, school, university,
+                           college, kindergarten, hospital, hotel, mosque, church, religious,
+                           public, civic, government, warehouse, kiosk, garage, garages,
+                           service, train_station, transportation, sports_hall, stadium,
+                           supermarket, parking, roof, ruins, construction]
+  non_residential_keys: [amenity, shop, office, tourism, craft, healthcare]
+  non_residential_landuse: [commercial, retail, industrial, military, railway]
+  default_yes: residential   # building=yes sans indice contraire (hypothèse, docs/osm_rules.md)
+
+green:                   # espaces verts COMPTÉS (publics ou explicitement accessibles)
+  include_tags:
+    leisure: [park, garden, playground]
+  exclude_tags:          # sur l'objet lui-même OU sur un polygone qui le contient
+    leisure: [golf_course]
+    landuse: [orchard, farmland, farmyard]
+    tourism: [hotel, resort]
+  exclude_access: ["private", "no", "customers", "permit"]
+  exclude_fee: true
+  manual_exclude: {}     # {"way/123": "raison"} : cas litigieux documentés
+  entrance_snap_m: 15    # nœuds du graphe à ≤ 15 m du contour = entrées
+  min_area_m2: 100
+
+candidates:              # parcelles HYPOTHÉTIQUES (jamais présentées comme aménageables)
+  include_tags:
+    landuse: [brownfield, greenfield, grass, vacant]
+    natural: [scrub, bare_ground]
+    amenity: [parking]
+  parking_types: [surface]            # parking=multi-storey / underground exclus
+  exclude_tags:
+    landuse: [military, cemetery, religious, railway]
+    natural: [water]
+  min_area_m2: 500
+
+obstacles:
+  tags:
+    natural: [water]
+    landuse: [military, cemetery, railway, reservoir]
+    waterway: [riverbank, canal]
+  line_tags:
+    railway: [rail]
+  line_buffer_m: 5
+
+network:
+  network_type: walk
+  adjacency_px: 1        # un ajout doit toucher le réseau piéton à ≤ 1 px (8 m)
+
+origins:
+  max_snap_m: 100        # origine écartée si le nœud piéton le plus proche est plus loin
+
+equity:
+  sectors_per_side: 2    # 4 quadrants fixes de 512 m par tuile
+  min_origins: 10        # secteur ignoré en dessous ; < 2 secteurs valides → E = NaN
+
+coverage:                # seuils du verdict « quartier exploitable »
+  min_built_ratio: 0.10  # emprise bâtie / surface de zone
+  min_origins: 200
+  min_candidates: 5
+  min_walk_density_km_per_km2: 10
+
+split:
+  strategy: district     # district | spatial_blocks (repli si un quartier est trop pauvre)
+  train: [massira, mabrouka]          # justifié dans docs/coverage.md (phase 1)
+  val: [hivernage]
+  test: [gueliz]
+  border_buffer_m: 400   # tuile chevauchant deux splits (± tampon) → exclue
+  synthetic_in: [train]  # le synthétique ne sert qu'à l'entraînement
+
+synthetic:
+  n_maps: 600
+  seed: 0
+  extent_m: 1024         # une tuile par carte synthétique
+  margin_m: 500          # contexte généré autour (≥ buffer_m)
+  street_half_width_m: 5.0   # retrait des îlots par rapport à l'axe des rues
+  typologies:            # calibrées sur les zones réelles (docs/synthetic.md)
+    dense:               # tissu dense à petits îlots (type Massira)
+      weight: 0.4
+      block_m: [60.0, 110.0]
+      jitter_m: 6.0
+      edge_drop: 0.08
+      lot_m: [24.0, 34.0]          # un « bâtiment » OSM ≈ un lot entier (blocs fusionnés)
+      building_coverage: [0.45, 0.70]
+      p_park: 0.01
+      p_vacant: 0.03
+      p_parking: 0.02
+      p_other: 0.08
+      p_obstacle: 0.01
+      p_empty: 0.30                # îlots non bâtis / non cartographiés
+    grid:                # trame moderne à îlots moyens, immeubles (type Guéliz)
+      weight: 0.35
+      block_m: [80.0, 130.0]
+      jitter_m: 8.0
+      edge_drop: 0.05
+      lot_m: [25.0, 40.0]
+      building_coverage: [0.40, 0.70]
+      p_park: 0.02
+      p_vacant: 0.04
+      p_parking: 0.03
+      p_other: 0.15
+      p_obstacle: 0.01
+      p_empty: 0.25
+    villas:              # grands îlots peu bâtis (type Hivernage)
+      weight: 0.25
+      block_m: [110.0, 180.0]
+      jitter_m: 10.0
+      edge_drop: 0.10
+      lot_m: [35.0, 60.0]
+      building_coverage: [0.15, 0.35]
+      p_park: 0.02
+      p_vacant: 0.08
+      p_parking: 0.04
+      p_other: 0.15
+      p_obstacle: 0.01
+      p_empty: 0.40
+
+pairs:
+  budget_fractions: [0.01, 0.02, 0.03, 0.05]   # b en fraction de la surface de la tuile
+  solutions_per_budget: 3
+  top_k: 3               # glouton stochastique : tirage parmi les k meilleures parcelles
+  attempts: 8            # tirages stochastiques par budget (on en garde ≤ solutions_per_budget)
+  min_relative_gain: 0.8 # qualité voisine : gain d'accès ≥ 80 % du meilleur gain connu
+  seed: 0
+  random_draws: 10       # tirages de la référence aléatoire (moyenne rapportée)
+  synthetic_val_fraction: 0.1   # cartes synthétiques réservées au suivi de l'entraînement
+  synthetic_test_fraction: 0.1  # test synthétique tenu à l'écart, rapporté séparément du test réel

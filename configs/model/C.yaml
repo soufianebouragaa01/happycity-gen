@@ -1,0 +1,7 @@
+# (C) Modèle complet : modulation + attention spatiale guidée par R + projection de validité.
+defaults:
+  - B
+  - _self_
+name: C
+attention: true
+projection: true

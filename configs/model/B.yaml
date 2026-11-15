@@ -1,0 +1,6 @@
+# (B) A + modulation FiLM conditionnée par un MLP sur (b, a).
+defaults:
+  - A
+  - _self_
+name: B
+cond_mode: film

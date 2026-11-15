@@ -1,0 +1,7 @@
+n_proposals: 2
+budget_fractions: [0.01, 0.02, 0.03, 0.05]
+# Cibles volontairement inatteignables : a = A400 glouton + décalage (vérifie la validité).
+unreachable_target_offsets: [0.10, 0.25]
+split_by_reachability: true   # rapporte global / atteignable / non atteignable
+random_baseline_draws: 10
+seed: 123

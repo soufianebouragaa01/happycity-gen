@@ -1,0 +1,8 @@
+# @package _global_
+# Ablation de C : ni perte de recherche de modes ni régression latente.
+ablation:
+  name: no_diversity
+model:
+  diversity:
+    mode_seeking_weight: 0.0
+    latent_regression_weight: 0.0

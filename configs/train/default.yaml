@@ -1,0 +1,23 @@
+seed: 42
+epochs: 40
+batch_size: 32
+lr_g: 2.0e-4
+lr_d: 2.0e-4
+betas: [0.5, 0.999]
+loss_weights:
+  adversarial: 1.0
+  reconstruction: 100.0   # L1/BCE sur le masque d'ajout
+  violation: 100.0        # pénalité hors parcelles autorisées / zones protégées
+  condition: 10.0         # écart entre budget/objectif conditionnés et réalisés (proxy différentiable)
+instance_noise: 0.1       # appliqué aux paires réelles ET générées
+num_workers: 2
+device: auto              # auto | cpu | cuda
+amp: true
+deterministic: false
+log_every: 50
+checkpoint_every: 5
+max_steps: null           # limite optionnelle (tests rapides)
+augment: true             # 8 symétries du carré (rotations, miroirs) sur le train
+val_z: 3                  # codes z par paire en validation (diversité)
+val_max_pairs: null       # limite optionnelle de paires de validation
+selection_split: val_synth  # split de sélection du meilleur checkpoint (le test n'y sert jamais)

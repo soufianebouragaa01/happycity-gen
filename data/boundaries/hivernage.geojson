@@ -1,0 +1,48 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -7.997975919879733,
+              31.60916900378253
+            ],
+            [
+              -7.99777793095055,
+              31.627643951515577
+            ],
+            [
+              -8.019370092106517,
+              31.62781161038453
+            ],
+            [
+              -8.019563817189098,
+              31.60933654224698
+            ],
+            [
+              -7.997975919879733,
+              31.60916900378253
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "hivernage",
+        "method": "manual_square_around_osm_anchor",
+        "anchor": "node/7264948882 (place=neighbourhood, L'Hivernage)",
+        "note": "Limite nord à 400 m de la zone Guéliz (tampon entre splits) ; zone élargie au sud.",
+        "utm_crs": "EPSG:32629",
+        "utm_bounds": [
+          593000.0,
+          3497552.0,
+          595048.0,
+          3499600.0
+        ]
+      }
+    }
+  ]
+}

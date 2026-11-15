@@ -1,0 +1,5 @@
+zone,split,source,area_km2,n_buildings,built_ratio,residential_share,res_explicit,res_landuse,res_default,walk_km,walk_density_km_per_km2,pedestrian_share,sidewalk_tag_share,n_green,green_ha,V,green_without_entrance,entrances_osm,entrances_boundary,n_green_excluded,green_excluded_reasons,n_candidates,candidates_ha,candidate_rules,n_origins,origins_dropped,n_obstacles,flags,usable
+gueliz,test,osm,4.194,2397,0.248,0.97,128,1940,256,91.3,21.8,0.129,0.002,21,8.3,0.0198,6,0,113,1,fee ×1,11,8.72,amenity=parking ×8; landuse=brownfield ×3,2311,31,19,,True
+hivernage,val,osm,4.194,593,0.093,0.796,7,428,37,73.4,17.5,0.461,0.006,6,9.2,0.0219,1,1,66,2,tag:tourism=hotel ×1; access=private ×1,12,5.84,amenity=parking ×10; landuse=grass ×1; landuse=brownfield ×1,456,91,4,faible emprise bâtie,False
+mabrouka,train,osm,4.194,2181,0.158,0.971,40,2063,14,70.3,16.8,0.033,0.0,10,2.62,0.0062,6,0,11,0,,8,28.99,natural=scrub ×5; amenity=parking ×3,2093,172,5,,True
+massira,train,osm,4.194,2500,0.272,0.986,12,2358,94,122.8,29.3,0.287,0.013,3,0.31,0.0007,1,0,5,0,,3,3.08,amenity=parking ×3,2458,36,4,trop peu de parcelles candidates,False

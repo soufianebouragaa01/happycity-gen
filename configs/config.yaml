@@ -1,0 +1,13 @@
+# Configuration racine HappyCity Gen (Hydra).
+# Exemples :  happycity show-config model=A
+#             happycity train model=C ablation=no_attention paths=kaggle
+defaults:
+  - paths: local
+  - data: marrakech
+  - model: C
+  - train: default
+  - eval: default
+  - ablation: none   # appliquée en dernier : modifie la variante choisie
+  - _self_
+
+run_name: ${model.name}-${ablation.name}

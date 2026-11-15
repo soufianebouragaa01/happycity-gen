@@ -1,0 +1,12 @@
+# Entraînement minimal pour vérifier la chaîne (CPU, quelques pas).
+defaults:
+  - default
+  - _self_
+epochs: 1
+batch_size: 4
+num_workers: 0
+device: cpu
+amp: false
+max_steps: 5
+val_z: 2
+val_max_pairs: 8

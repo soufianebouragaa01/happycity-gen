@@ -1,0 +1,44 @@
+# Python / outillage
+__pycache__/
+*.py[cod]
+.venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+build/
+dist/
+
+# Données (hors Git ; seuls les .gitkeep sont versionnés)
+data/raw/*
+data/interim/*
+data/processed/*
+!data/**/.gitkeep
+
+# Polygones manuels des quartiers : versionnés (petits, documentés)
+!data/boundaries/
+
+# Sorties d'expériences
+experiments/
+outputs/
+multirun/
+runs/
+*.pth
+*.ckpt
+cache/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Secrets
+.env
+kaggle.json
+
+# Éditeurs / OS
+.vscode/*
+!.vscode/settings.json
+.idea/
+Thumbs.db
+.DS_Store

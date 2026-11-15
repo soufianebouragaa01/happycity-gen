@@ -1,0 +1,15 @@
+# (A) cGAN de référence : (b, a) concaténés comme canaux constants.
+name: A
+cond_mode: concat        # concat | film | adain
+attention: false         # attention spatiale guidée par R
+projection: false        # projection de validité appliquée à la sortie (l'évaluation rapporte aussi brut/projeté)
+ngf: 32
+ndf: 32
+n_downs: 5               # 128 → 4 px au goulot
+dropout: 0.5
+z_dim: 8
+z_injection: adain       # adain | concat | none
+threshold: 0.5           # seuil de décision de la carte de probabilités
+diversity:               # même mécanisme pour A/B/C : seule la variable étudiée change
+  mode_seeking_weight: 1.0       # MSGAN
+  latent_regression_weight: 0.5  # régression du code latent (BicycleGAN)

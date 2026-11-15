@@ -1,0 +1,126 @@
+[project]
+name = "happycity-gen"
+version = "0.1.0"
+description = "GAN conditionnel proposant des scénarios d'espaces verts urbains (Marrakech) pour l'accessibilité à 400 m."
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+license = { text = "MIT" }
+dependencies = [
+    # Géomatique
+    "geopandas>=1.0",
+    "shapely>=2.0",
+    "pyproj>=3.6",
+    "osmnx>=2.0",
+    "networkx>=3.2",
+    "rasterio>=1.3",
+    # Calcul / données
+    "numpy>=1.26,<3",
+    "scipy>=1.11",
+    "pandas>=2.2,<3.1",       # pandas 3.1.x bloqué par Smart App Control sous Windows
+    "pyarrow>=15",
+    # Apprentissage (version laissée souple : Kaggle fournit déjà torch)
+    "torch>=2.4",
+    "tensorboard>=2.16",
+    # Configuration / CLI / visualisation
+    "hydra-core>=1.3.2",
+    "omegaconf>=2.3",
+    "typer>=0.12",
+    "matplotlib>=3.8",
+    "tqdm>=4.66",
+    "osmium>=4.0",
+]
+
+[project.optional-dependencies]
+app = ["streamlit>=1.38", "folium>=0.17", "streamlit-folium>=0.22"]
+notebook = ["ipykernel>=6.29"]
+
+[project.scripts]
+happycity = "happycity.cli:app"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "pytest>=8.3",
+    "pytest-cov>=5.0",
+    "pre-commit>=4.0",
+    "pandas-stubs>=2.2",
+    "types-tqdm",
+    "types-shapely",
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/happycity"]
+
+# --- PyTorch : CUDA 12.8 en local (Windows, GTX 1650), CPU sur Linux (CI). ---
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cu128", marker = "sys_platform == 'win32'" },
+    { index = "pytorch-cpu", marker = "sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+# --- Qualité ---
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "NPY", "PT", "RUF", "D", "PTH", "N"]
+ignore = [
+    "D105", "D107",   # docstrings des méthodes magiques / __init__
+    "RUF001", "RUF002", "RUF003",  # caractères ambigus : le texte est en français
+    "N812",           # import torch.nn.functional as F
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D"]
+"notebooks/**" = ["D"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["src", "tests"]
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["osmnx.*", "networkx.*", "rasterio.*", "geopandas.*", "scipy.*", "pyproj.*", "hydra.*", "streamlit.*", "folium.*", "streamlit_folium.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Les appels de nn.Module renvoient Any dans les stubs de torch.
+module = ["happycity.models.*", "happycity.training.*"]
+warn_return_any = false
+disallow_untyped_calls = false  # Tensor.backward n'est pas annoté
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+filterwarnings = [
+    # avertissement interne à rasterio (Affine), sans effet sur nos résultats
+    'ignore:Use `@` matmul instead of:PendingDeprecationWarning',
+]
+markers = [
+    "slow: tests longs (réseau, entraînement)",
+    "network: nécessite un accès Internet (Overpass)",
+]
+
+[tool.coverage.run]
+source = ["happycity"]

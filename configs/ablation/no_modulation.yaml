@@ -1,0 +1,6 @@
+# @package _global_
+# Ablation de C : (b, a) en canaux concaténés au lieu de FiLM.
+ablation:
+  name: no_modulation
+model:
+  cond_mode: concat

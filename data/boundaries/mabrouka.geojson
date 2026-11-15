@@ -1,0 +1,48 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -8.026043562913799,
+              31.647115078094338
+            ],
+            [
+              -8.025850834055927,
+              31.66559007256097
+            ],
+            [
+              -8.047451948466563,
+              31.665753157918225
+            ],
+            [
+              -8.047640405281719,
+              31.647278046410175
+            ],
+            [
+              -8.026043562913799,
+              31.647115078094338
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "mabrouka",
+        "method": "manual_square_around_osm_anchor",
+        "anchor": "node/8492176038 (amenity=pharmacy « Pharmacie Hay Mabrouka »)",
+        "note": "Seul repère OSM du quartier : localisation INCERTAINE, à valider visuellement.",
+        "utm_crs": "EPSG:32629",
+        "utm_bounds": [
+          590300.0,
+          3501734.0,
+          592348.0,
+          3503782.0
+        ]
+      }
+    }
+  ]
+}
