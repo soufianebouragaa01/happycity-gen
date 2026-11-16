@@ -10,4 +10,4 @@ defaults:
   - ablation: none   # appliquée en dernier : modifie la variante choisie
   - _self_
 
-run_name: ${model.name}-${ablation.name}
+run_name: ${model.name}-${ablation.name}-s${train.seed}   # ex. C-full-s42

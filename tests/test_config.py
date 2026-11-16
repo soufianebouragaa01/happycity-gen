@@ -17,7 +17,7 @@ def test_default_config_is_model_c_full() -> None:
     cfg = load_config()
     assert cfg.model.name == "C"
     assert cfg.ablation.name == "full"
-    assert cfg.run_name == "C-full"
+    assert cfg.run_name == "C-full-s42"
     assert cfg.data.crs == "EPSG:32629"
 
 
@@ -62,7 +62,7 @@ def test_variants_share_everything_but_studied_options() -> None:
 def test_ablations_modify_model_c(ablation: str, check: object) -> None:
     cfg = load_config([f"ablation={ablation}"])
     assert cfg.model.name == "C"
-    assert cfg.run_name == f"C-{ablation}"
+    assert cfg.run_name == f"C-{ablation}-s42"
     assert callable(check)
     assert check(cfg.model)
 
