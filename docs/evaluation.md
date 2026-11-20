@@ -88,14 +88,21 @@ Ablations de C (graine 42 seule) : |â−a| atteignable 0,030 à 0,035, toutes v
 
 ## Constats (3 graines pour A, B et C)
 
-1. **Les modèles suivent la condition a, mais moins bien que le glouton ciblé.** Sur
-   `test_synth`, les cibles atteignables donnent C 0,034 ± 0,002, contre 0,071 pour
-   l'aléatoire (2 fois mieux) et 0,013 pour le glouton ciblé (2,6 fois moins bien). Le GAN
-   ne bat pas la référence non générative sur la fidélité à la cible. Son intérêt est
-   ailleurs : plusieurs propositions en environ 12 ms par carte.
-2. **A, B et C ont la même fidélité à la cible.** Les écarts (0,034 / 0,037 / 0,039) sont
-   du même ordre que la variabilité entre graines. **La modulation FiLM (B) n'apporte pas de
-   gain mesurable par rapport à la concaténation (A).**
+1. **Les modèles ignorent la cible a : constat principal, ajouté en phase 7.** Le test de
+   réponse à la condition (section suivante) donne une pente de ≈ 0 pour A, B et C sur les
+   3 graines. Dans 96 à 98 % des cas, demander une cible basse ou haute produit la même
+   proposition. Les modèles **maximisent l'accès avec le budget b**, quelle que soit a.
+2. **La faible erreur |â − a| des cibles a posteriori est donc trompeuse.** Ces cibles valent
+   presque toujours l'A400 maximal atteignable (0,034 pour C). Un modèle qui maximise tombe
+   juste sans utiliser a ; sur une cible basse, son erreur monte à 0,31. Les différences
+   entre A, B et C sur |â − a| sont de l'ordre de la variabilité entre graines, et **la
+   modulation FiLM (B) n'apporte rien de mesurable** : elle module une information que le
+   modèle n'exploite pas.
+
+   **Cause** : les paires d'entraînement (phase 4) viennent du glouton stochastique, qui
+   dépense tout le budget. Pour une tuile et un budget donnés, a est donc toujours proche
+   du maximum et n'apporte aucune information de plus que b. Corriger cela demande des
+   paires où a varie à budget fixe, donc un réentraînement.
 3. **La validité est l'apport net et robuste de C.** C est valide à 100 % pour les 3 graines.
    A (16 ± 11 %) et B (19 ± 4 %) ne le sont que rarement en sortie brute, et la qualité
    d'une graine à l'autre est très variable pour A.
@@ -124,11 +131,37 @@ Ablations de C (graine 42 seule) : |â−a| atteignable 0,030 à 0,035, toutes v
 9. **E se lit avec A400** : les méthodes qui augmentent le plus A400 augmentent aussi le
    plus E. Aucun arbitrage entre accès moyen et équité n'apparaît dans ces données.
 
+## Réponse à la condition a (ajout de la phase 7)
+
+Commande : incluse dans `happycity evaluate`, module `evaluation/condition.py`. Pour chaque
+tuile de `test_synth` et chaque budget (2 % et 3 %), on demande deux cibles :
+
+- **basse** : A400 avant + 25 % de l'écart jusqu'au glouton ;
+- **haute** : A400 du glouton.
+
+On ne garde que les cas où l'écart entre ces deux cibles est d'au moins 0,10, et les codes z
+sont les mêmes pour les deux cibles.
+
+**Pente** = variation d'A400 obtenue / variation demandée : 1 si a est suivie, 0 si elle est
+ignorée. Le tableau à jour est dans
+[figures/evaluation_report.md](figures/evaluation_report.md).
+
+| méthode | pente (idéal 1) | sans réaction (pente < 0,1) | \|â−a\| cible basse | \|â−a\| cible haute |
+|---|---|---|---|---|
+| A (3 graines) | −0,01 ± 0,02 | 98 % | 0,314 ± 0,004 | 0,034 ± 0,004 |
+| B (3 graines) | 0,01 ± 0,02 | 96 % | 0,310 ± 0,017 | 0,034 ± 0,005 |
+| C (3 graines) | 0,01 ± 0,01 | 97 % | 0,310 ± 0,009 | 0,031 ± 0,002 |
+| glouton ciblé | 0,50 | 8 % | 0,159 | 0,002 |
+
+Le glouton ciblé n'atteint qu'une pente de 0,5, car il ajoute des parcelles entières et
+dépasse souvent une cible basse. Lui réagit pourtant à a ; les modèles, non.
+
 ## Limites
 
 - Trois graines pour A, B et C, une seule pour les ablations.
 - Supervision **simulée** : les cibles viennent du glouton stochastique, pas de projets
-  réels.
+  réels. Elles saturent le budget, si bien que **la condition a n'est pas apprise** (voir
+  ci-dessus).
 - Test réel petit (7 tuiles, 32 paires) et peu discriminant.
 - A400 doux à l'entraînement, exact à l'évaluation : les écarts rapportés sont ceux de la
   métrique exacte.

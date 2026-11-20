@@ -14,7 +14,7 @@ from happycity.data import coverage
 from happycity.data.pairs import make_problem, stable_seed
 from happycity.data.pipeline import context_dir, tiles_dir
 from happycity.data.raster import TileRaster
-from happycity.evaluation import figures, report
+from happycity.evaluation import condition, figures, report
 from happycity.evaluation.problems import build_problems
 from happycity.evaluation.runner import RunInfo, _inputs, discover_runs, evaluate
 from happycity.metrics import TileAccessContext, evaluate_tile
@@ -56,6 +56,10 @@ def run_evaluate(
     meta = {"runs": [r.name for r in runs], "device": dev, "n_proposals": int(cfg.eval.n_proposals),
             "random_draws": int(cfg.eval.random_baseline_draws), "splits": splits}  # fmt: skip
     (out / "meta.json").write_text(json.dumps(meta, indent=2, ensure_ascii=False), encoding="utf-8")
+    full = [r for r in runs if r.ablation in ("full", "none")]
+    if full and "test_synth" in splits:
+        probe = condition.condition_response(cfg, problems, full, "test_synth", dev)
+        probe.to_parquet(out / "condition_probe.parquet", index=False)
     write_report(cfg, table, problems, runs, out)
     return out
 

@@ -40,7 +40,19 @@ Overrides = Annotated[
 ]
 
 
+def _batch_plots() -> None:
+    """Figures écrites sur disque, sans fenêtre : la CLI tourne aussi sans écran.
+
+    Réglé ici, et non dans les modules de figures, pour que le notebook et Streamlit
+    gardent leur propre moteur d'affichage.
+    """
+    import matplotlib
+
+    matplotlib.use("Agg")
+
+
 def _config(overrides: list[str] | None) -> DictConfig:
+    _batch_plots()
     try:
         return load_config(overrides or [])
     except Exception as exc:  # erreurs Hydra/OmegaConf : message lisible plutôt qu'une trace
@@ -50,15 +62,6 @@ def _config(overrides: list[str] | None) -> DictConfig:
 
 def _logging() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s : %(message)s")
-
-
-def _not_implemented(command: str, phase: int) -> None:
-    typer.secho(
-        f"« {command} » n'est pas encore implémentée (prévue en phase {phase}).",
-        fg=typer.colors.YELLOW,
-        err=True,
-    )
-    raise typer.Exit(code=1)
 
 
 @app.command()
@@ -203,10 +206,60 @@ def evaluate(
 
 
 @app.command()
-def demo(overrides: Overrides = None) -> None:
-    """Lance l'interface de démonstration."""
-    _config(overrides)
-    _not_implemented("demo", 7)
+def demo(
+    overrides: Overrides = None,
+    tile: Annotated[str, typer.Option(help="Tuile, par ex. gueliz_11 ou synth_00545.")] = (
+        "gueliz_11"
+    ),
+    budget: Annotated[float, typer.Option(help="Budget b (fraction de la tuile).")] = 0.02,
+    target: Annotated[
+        float | None, typer.Option(help="Cible a (défaut : A400 du glouton).")
+    ] = None,
+    n: Annotated[int, typer.Option(help="Nombre de propositions.")] = 3,
+    seed: Annotated[int, typer.Option(help="Graine des codes z.")] = 0,
+    run: Annotated[str | None, typer.Option(help="Exécution (défaut : C complet).")] = None,
+    ui: Annotated[bool, typer.Option("--ui", help="Lance l'interface Streamlit.")] = False,
+) -> None:
+    """Scénario d'aménagement sur une tuile (figure + tableau), ou interface Streamlit (--ui)."""
+    if ui:
+        import subprocess
+        import sys
+        from pathlib import Path
+
+        app_file = Path(__file__).resolve().parents[2] / "app" / "streamlit_app.py"
+        args = [sys.executable, "-m", "streamlit", "run", str(app_file), "--", *(overrides or [])]
+        raise typer.Exit(subprocess.call(args))
+
+    from pathlib import Path
+
+    from happycity import demo as d
+
+    cfg = _config(overrides)
+    runs = d.available_runs(cfg)
+    chosen = next((r for r in runs if r.name == run), None) if run else d.default_run(runs)
+    if chosen is None:
+        typer.secho(
+            "Aucun modèle entraîné trouvé dans experiments/.", fg=typer.colors.RED, err=True
+        )
+        raise typer.Exit(code=1)
+    tiles = d.available_tiles(cfg).set_index("tile_id")
+    if tile not in tiles.index:
+        typer.secho(f"Tuile inconnue : {tile}", fg=typer.colors.RED, err=True)
+        raise typer.Exit(code=2)
+    row = tiles.loc[tile].to_dict()
+    a = float(target) if target is not None else float(row[f"greedy_{budget:.2f}"])
+    scenario = d.run_scenario(cfg, chosen, str(row["pair_file"]), budget, a, n=n, seed=seed)
+    out = Path(cfg.paths.experiments_dir) / "demo"
+    stem = f"{tile}_b{budget:.2f}_a{a:.2f}_{chosen.name}"
+    d.plot_scenario(scenario, out / f"{stem}.png")
+    table = d.scenario_table(scenario)
+    table.to_csv(out / f"{stem}.csv", index=False)
+    typer.echo(table.round(3).to_string(index=False))
+    reach = "oui" if scenario.reachable else "non"
+    typer.echo(f"cible atteignable par le glouton : {reach} (glouton : {scenario.greedy_max:.1%})"
+               f" · diversité : {d.diversity(scenario):.3f}")  # fmt: skip
+    typer.echo(d.DISCLAIMER)
+    typer.echo(f"✓ figure : {out / f'{stem}.png'}")
 
 
 if __name__ == "__main__":  # pragma: no cover

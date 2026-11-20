@@ -194,6 +194,19 @@ Dépôt **public** : le notebook Kaggle le clone simplement, sans token.
 - Graines : nom d'exécution suffixé (`-s42`) ; agrégation moyenne ± écart-type entre graines.
 - `rasterio < 1.4.4` et `pyarrow != 26.0.1` : DLL bloquées par Smart App Control.
 
+## D19 — Démonstration et réponse à la condition (docs/demo.md)
+
+- Un seul module `happycity.demo` pour la CLI, le notebook et Streamlit ; un test interdit à
+  l'interface tout autre import de `happycity`.
+- Le moteur matplotlib « Agg » est réglé seulement dans la CLI, les tests et Streamlit, pour
+  que le notebook affiche ses figures.
+- **Constat** : les modèles ignorent a (pente ≈ 0 dans 96 à 98 % des cas, 3 graines). Les
+  paires de la phase 4 saturent le budget, si bien que a est redondante avec b. Le test de
+  réponse à la condition fait désormais partie de `happycity evaluate`. **Correction
+  possible** : paires à a variable pour un budget fixe (glouton ciblé arrêté à des cibles
+  tirées entre l'A400 avant et le maximum), puis réentraînement. Elle n'est pas faite : c'est
+  à l'utilisateur de décider.
+
 ## Questions ouvertes
 
 - Date exacte du jalon J1.

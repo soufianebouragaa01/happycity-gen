@@ -4,42 +4,11 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 from omegaconf import DictConfig
 
-from happycity.config import load_config
-from happycity.data.access_context import build_context, metric_params, with_channel
-from happycity.data.layers import UrbanLayers
-from happycity.data.pairs import tile_pairs
-from happycity.data.raster import TileSpec, rasterize_tile
 from happycity.evaluation import report
 from happycity.evaluation.problems import build_problems
 from happycity.evaluation.runner import evaluate
-from happycity.metrics import served_origins, unserved_raster
-
-
-@pytest.fixture(scope="module")
-def processed(small_synthetic: UrbanLayers, tmp_path_factory: pytest.TempPathFactory) -> DictConfig:
-    """Mini dossier ``processed`` : une tuile de test synthétique, ses paires et références."""
-    root = tmp_path_factory.mktemp("processed")
-    cfg = load_config([f"paths.processed_dir={root.as_posix()}", "eval.n_proposals=2",
-                       "eval.random_baseline_draws=3"])  # fmt: skip
-    xmin, ymin, _, _ = small_synthetic.zone.bounds
-    spec = TileSpec(small_synthetic.name, "synthetic", small_synthetic.name, "test_synth",
-                    xmin, ymin, 1024.0)  # fmt: skip
-    tile = rasterize_tile(small_synthetic, spec, cfg.data)
-    ctx = build_context(small_synthetic, tile, cfg.data)
-    params = metric_params(cfg.data)
-    tile = with_channel(tile, "unserved_origins", unserved_raster(ctx, served_origins(ctx, params)))
-    name = f"{spec.tile_id}.npz"
-    tile.save(root / "tiles" / name)
-    ctx.save(root / "context" / name)
-    pairs, _, baselines = tile_pairs(tile, ctx, "test_synth", cfg.data, params)
-    table = pd.DataFrame(pairs).assign(pair_file=name, mask_index=range(len(pairs)))
-    table["pair_id"] = [f"p{i}" for i in range(len(table))]
-    table.to_parquet(root / "pairs.parquet", index=False)
-    pd.DataFrame(baselines).to_parquet(root / "baselines.parquet", index=False)
-    return cfg
 
 
 def test_problems_types_and_reachability(processed: DictConfig) -> None:

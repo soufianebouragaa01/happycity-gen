@@ -12,11 +12,8 @@ from pathlib import Path
 from typing import Any
 
 import geopandas as gpd
-import matplotlib as mpl
-import numpy as np
-
-mpl.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from matplotlib.patches import Patch
 from omegaconf import DictConfig

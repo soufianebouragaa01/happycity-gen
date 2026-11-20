@@ -7,6 +7,7 @@ from collections.abc import Callable
 from typing import Any
 
 import geopandas as gpd
+import matplotlib
 import networkx as nx
 import pytest
 from omegaconf import DictConfig
@@ -16,6 +17,8 @@ from happycity.config import load_config
 from happycity.data.layers import UrbanLayers
 from happycity.data.osm import RELEVANT_KEYS
 from happycity.data.synthetic import generate_map
+
+matplotlib.use("Agg")  # tests sans écran
 
 CRS = "EPSG:32629"
 X0, Y0 = 500_000.0, 3_500_000.0
@@ -68,3 +71,40 @@ def small_synthetic() -> UrbanLayers:
     """Carte synthétique (une tuile de 1024 m, contexte réduit à 150 m) pour des tests rapides."""
     small = load_config(["data.synthetic.margin_m=150"])
     return generate_map(1, small.data)
+
+
+@pytest.fixture(scope="session")
+def processed(small_synthetic: UrbanLayers, tmp_path_factory: pytest.TempPathFactory) -> DictConfig:
+    """Mini dossier de données : une tuile de test synthétique, ses paires et références.
+
+    Arborescence : ``<racine>/processed/{tiles,context,pairs.parquet,baselines.parquet}`` et
+    ``<racine>/experiments`` (vide), via ``paths.data_dir`` et ``paths.experiments_dir``.
+    """
+    import pandas as pd
+
+    from happycity.data.access_context import build_context, metric_params, with_channel
+    from happycity.data.pairs import tile_pairs
+    from happycity.data.raster import TileSpec, rasterize_tile
+    from happycity.metrics import served_origins, unserved_raster
+
+    root = tmp_path_factory.mktemp("data")
+    cfg = load_config([f"paths.data_dir={root.as_posix()}",
+                       f"paths.experiments_dir={(root / 'experiments').as_posix()}",
+                       "eval.n_proposals=2", "eval.random_baseline_draws=3"])  # fmt: skip
+    out = root / "processed"
+    xmin, ymin, _, _ = small_synthetic.zone.bounds
+    spec = TileSpec(small_synthetic.name, "synthetic", small_synthetic.name, "test_synth",
+                    xmin, ymin, 1024.0)  # fmt: skip
+    tile = rasterize_tile(small_synthetic, spec, cfg.data)
+    ctx = build_context(small_synthetic, tile, cfg.data)
+    params = metric_params(cfg.data)
+    tile = with_channel(tile, "unserved_origins", unserved_raster(ctx, served_origins(ctx, params)))
+    name = f"{spec.tile_id}.npz"
+    tile.save(out / "tiles" / name)
+    ctx.save(out / "context" / name)
+    pairs, _, baselines = tile_pairs(tile, ctx, "test_synth", cfg.data, params)
+    table = pd.DataFrame(pairs).assign(pair_file=name, mask_index=range(len(pairs)))
+    table["pair_id"] = [f"p{i}" for i in range(len(table))]
+    table.to_parquet(out / "pairs.parquet", index=False)
+    pd.DataFrame(baselines).to_parquet(out / "baselines.parquet", index=False)
+    return cfg

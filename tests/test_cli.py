@@ -11,16 +11,11 @@ from happycity.cli import app
 
 runner = CliRunner()
 
-COMMANDS = [  # commandes encore non implémentées (phases suivantes)
-    "demo",
-]
-
 
 def test_help_lists_all_commands() -> None:
     result = runner.invoke(app, ["--help"])
     assert result.exit_code == 0
     for command in [
-        *COMMANDS,
         "show-config",
         "version",
         "extract",
@@ -29,6 +24,7 @@ def test_help_lists_all_commands() -> None:
         "make-dataset",
         "train",
         "evaluate",
+        "demo",
     ]:
         assert command in result.output
 
@@ -43,12 +39,6 @@ def test_show_config_applies_overrides() -> None:
 def test_invalid_override_gives_clean_error() -> None:
     result = runner.invoke(app, ["show-config", "model=Z"])
     assert result.exit_code == 2
-
-
-@pytest.mark.parametrize("command", COMMANDS)
-def test_unimplemented_commands_exit_cleanly(command: str) -> None:
-    result = runner.invoke(app, [command])
-    assert result.exit_code == 1
 
 
 @pytest.mark.slow

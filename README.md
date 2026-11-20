@@ -51,7 +51,18 @@ uv run happycity show-config paths=kaggle            # chemins Kaggle
 | `happycity make-dataset` | jeu compact d'entraînement (.npz par split, motifs de desserte pour l'A400 doux) | 5 |
 | `happycity train` | entraînement d'une variante / ablation, ex. `model=C ablation=no_attention` (Kaggle : `notebooks/kaggle_train.ipynb`) | 5 |
 | `happycity evaluate` | métriques exactes des variantes, ablations et références (aléatoire, glouton, glouton ciblé) sur test_synth et Guéliz ; rapport `experiments/evaluation/report.md` | 6 |
-| `happycity demo` | interface de démonstration | 7 |
+| `happycity demo` | scénario sur une tuile (figure + tableau) ; `--ui` lance l'interface Streamlit ; voir `docs/demo.md` et `notebooks/demo.ipynb` | 7 |
+
+## Démonstration
+
+```bash
+uv run happycity demo --tile gueliz_11 --budget 0.02      # figure + tableau dans experiments/demo/
+uv sync --extra app && uv run happycity demo --ui         # interface Streamlit (http://localhost:8501)
+```
+
+La CLI, le notebook `notebooks/demo.ipynb` et l'interface appellent les mêmes fonctions
+(`src/happycity/demo.py`). Résultats et limites : `docs/evaluation.md`. En particulier, **les
+modèles entraînés ignorent la cible a** : ils maximisent l'accès avec le budget.
 
 ## Arborescence
 
