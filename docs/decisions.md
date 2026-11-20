@@ -207,6 +207,14 @@ Dépôt **public** : le notebook Kaggle le clone simplement, sans token.
   tirées entre l'A400 avant et le maximum), puis réentraînement. Elle n'est pas faite : c'est
   à l'utilisateur de décider.
 
+## D20 — Paires v2 à cible variable (validé par l'utilisateur le 20/11/2026)
+
+- Ajout de solutions « glouton ciblé stochastique » arrêtées à 25, 50 et 75 % du gain
+  maximal, pour que a varie à budget fixe (écart moyen 0,023 → 0,209).
+- Les modèles v1 (qui ignorent a) sont archivés dans `experiments_v1/`, avec leurs paires
+  et leur jeu compact. Réentraînement complet sur Kaggle (13 exécutions), puis réévaluation.
+- Notebook Kaggle : `RUNS = (variante, ablation, graines)`, une seule version pour tout.
+
 ## Questions ouvertes
 
 - Date exacte du jalon J1.

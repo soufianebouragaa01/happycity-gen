@@ -169,6 +169,10 @@ pairs:
   top_k: 3               # glouton stochastique : tirage parmi les k meilleures parcelles
   attempts: 8            # tirages stochastiques par budget (on en garde ≤ solutions_per_budget)
   min_relative_gain: 0.8 # qualité voisine : gain d'accès ≥ 80 % du meilleur gain connu
+  # Paires à cible INTERMÉDIAIRE (même tuile, même budget) : glouton ciblé stochastique arrêté
+  # à A400 avant + q × (meilleur A400 − A400 avant). Sans elles, a vaut toujours le maximum
+  # atteignable et le modèle apprend à l'ignorer (constat de la phase 7).
+  target_fractions: [0.25, 0.5, 0.75]
   seed: 0
   random_draws: 10       # tirages de la référence aléatoire (moyenne rapportée)
   synthetic_val_fraction: 0.1   # cartes synthétiques réservées au suivi de l'entraînement

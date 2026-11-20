@@ -1,5 +1,11 @@
 # Évaluation : variantes, ablations et références (phase 6)
 
+> **Version** : les résultats ci-dessous sont ceux des **modèles v1**, archivés dans
+> `experiments_v1/`. Ils ont été entraînés sur des paires où a valait toujours le maximum
+> atteignable, et ils ignorent a. Les paires v2 (`docs/baselines_pairs.md`) corrigent ce
+> défaut. Les modèles v2 sont à réentraîner sur Kaggle, puis à réévaluer avec
+> `happycity evaluate` ; ce document sera alors mis à jour.
+
 Code : `src/happycity/evaluation/`. Commande : `happycity evaluate`, avec les options
 `--runs` (motif) et `--splits`. Sorties dans `experiments/evaluation/` :
 `results.parquet` (une ligne par proposition), `report.md`, `summary_<split>.csv` et

@@ -61,8 +61,10 @@ uv sync --extra app && uv run happycity demo --ui         # interface Streamlit 
 ```
 
 La CLI, le notebook `notebooks/demo.ipynb` et l'interface appellent les mêmes fonctions
-(`src/happycity/demo.py`). Résultats et limites : `docs/evaluation.md`. En particulier, **les
-modèles entraînés ignorent la cible a** : ils maximisent l'accès avec le budget.
+(`src/happycity/demo.py`). Résultats et limites : `docs/evaluation.md`. Les modèles v1
+ignoraient la cible a ; les paires v2 corrigent ce défaut (`docs/baselines_pairs.md`).
+
+**Exécuter le projet pas à pas : [docs/guide_execution.md](docs/guide_execution.md).**
 
 ## Arborescence
 

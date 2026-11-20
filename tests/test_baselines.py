@@ -203,3 +203,31 @@ def test_targeted_greedy_stops_at_target() -> None:
     unreachable = targeted_greedy_placement(problem, 20, target_a400=1.0)
     assert unreachable.a400 == pytest.approx(5 / 7)  # budget insuffisant : meilleur effort
     assert targeted_greedy_placement(problem, 60, target_a400=0.0).n_px == 0
+
+
+def test_pairs_have_varied_targets_for_a_same_budget(
+    small_synthetic: UrbanLayers, cfg: DictConfig
+) -> None:
+    """Sans cibles intermédiaires, a = maximum atteignable : redondante avec b (phase 7)."""
+    xmin, ymin, _, _ = small_synthetic.zone.bounds
+    spec = TileSpec(
+        small_synthetic.name, "synthetic", small_synthetic.name, "train", xmin, ymin, 1024.0
+    )
+    tile = rasterize_tile(small_synthetic, spec, cfg.data)
+    ctx = build_context(small_synthetic, tile, cfg.data)
+    pairs, masks, _ = tile_pairs(tile, ctx, "train", cfg.data, metric_params(cfg.data))
+    table = pd.DataFrame(pairs)
+    kept = table[table["excluded"] == ""]
+    assert set(kept["kind"]) >= {"max"}
+    assert kept["kind"].str.startswith("cible").any()
+    spreads = kept.groupby("b_frac")["a_target"].agg(lambda a: a.max() - a.min())
+    assert (spreads > 0.05).any()  # a varie vraiment à budget fixe
+    for _, group in kept.groupby("b_frac"):
+        top = group[group["kind"] == "max"]
+        inter = group[group["kind"] != "max"]
+        if len(top) and len(inter):
+            assert inter["n_px"].min() <= top["n_px"].max()  # viser moins = ajouter moins
+            assert (inter["a_target"] <= top["a_target"].max() + 1e-9).all()
+    for _, group in kept.groupby("b_frac"):  # solutions distinctes à budget égal
+        keys = {np.packbits(masks[k]).tobytes() for k in group.index}
+        assert len(keys) == len(group)

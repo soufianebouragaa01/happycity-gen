@@ -18,7 +18,13 @@ from typing import Any
 import numpy as np
 from omegaconf import DictConfig
 
-from happycity.baselines import Placement, PlacementProblem, greedy_placement, random_placement
+from happycity.baselines import (
+    Placement,
+    PlacementProblem,
+    greedy_placement,
+    random_placement,
+    targeted_greedy_placement,
+)
 from happycity.data.raster import TileRaster
 from happycity.metrics import MetricParams, TileAccessContext, evaluate_tile
 
@@ -165,11 +171,27 @@ def tile_pairs(
                 {**info, "solution": -1, "excluded": "aucun gain d'accès possible", "method": "",
                  "n_px": 0, "n_parcels": 0, "a_target": np.nan, "A400_after": before.A400,
                  "V_after": before.V, "E_after": before.E, "delta_m2": 0.0, "internal_a400": np.nan,
-                 "diversity_1_iou": np.nan, "n_unique_solutions": 0}
+                 "diversity_1_iou": np.nan, "n_unique_solutions": 0, "kind": ""}
             )  # fmt: skip
             masks.append(np.zeros_like(tile.candidate_ids, dtype=bool))
             continue
-        for s_idx, sol in enumerate(solutions):
+        # Cibles INTERMÉDIAIRES (même tuile, même budget) : sans elles, a vaut toujours le
+        # maximum atteignable et n'apporte rien de plus que b (le modèle apprend à l'ignorer).
+        kinds = ["max"] * len(solutions)
+        n_max = len(solutions)
+        before_a = float(problem.base_served.mean()) if len(problem.base_served) else 0.0
+        best_a = max(float(d.a400) for d in [greedy, *draws])
+        for q_idx, q in enumerate(cfg.target_fractions):
+            target = before_a + float(q) * (best_a - before_a)
+            rng = np.random.default_rng(stable_seed(cfg.seed, tile.spec.tile_id, b_idx, "q", q_idx))
+            sol = targeted_greedy_placement(problem, budget_px, target, rng, int(cfg.top_k))
+            key = np.packbits(sol.mask).tobytes()
+            if sol.n_px == 0 or key in seen:
+                continue
+            seen.add(key)
+            solutions.append(sol)
+            kinds.append(f"cible {float(q):.2f}")
+        for s_idx, (sol, kind) in enumerate(zip(solutions, kinds, strict=True)):
             scores = _scores("", ctx, sol, params, budget_m2)
             pairs.append(
                 {
@@ -185,8 +207,9 @@ def tile_pairs(
                     "E_after": scores["E"],
                     "delta_m2": scores["delta_m2"],
                     "internal_a400": sol.a400,
-                    "diversity_1_iou": diversity,
-                    "n_unique_solutions": len(solutions),
+                    "diversity_1_iou": diversity,  # entre solutions « max » de qualité voisine
+                    "n_unique_solutions": n_max,
+                    "kind": kind,
                 }
             )
             masks.append(sol.mask)

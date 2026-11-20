@@ -22,6 +22,7 @@ data/processed/*
 
 # Sorties d'expériences
 experiments/
+experiments_v1/
 outputs/
 multirun/
 runs/

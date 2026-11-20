@@ -100,3 +100,34 @@ par paire.
    (déjà desservies à 92–100 %).
 4. La diversité diminue quand le budget augmente (1 − IoU de 0,67 à 1 % contre 0,42 à 5 %) :
    avec beaucoup de budget, les solutions finissent par prendre les mêmes parcelles.
+
+## Version 2 : cibles intermédiaires (correction de la phase 7)
+
+**Problème** : en v1, toutes les solutions dépensaient le budget au mieux. Pour une tuile et
+un budget donnés, a valait donc toujours le maximum atteignable (écart moyen de 0,023 entre
+les cibles d'un même couple tuile × budget). La cible était redondante avec b, et les modèles
+ont appris à l'ignorer : pente de réponse ≈ 0 (`docs/evaluation.md`).
+
+**Correction** (`pairs.target_fractions: [0.25, 0.5, 0.75]`) : pour chaque tuile × budget, on
+ajoute aux solutions « max » des solutions du **glouton ciblé stochastique**, arrêté à
+A400 avant + q × (meilleur A400 − A400 avant). La cible a reste l'A400 **réellement atteint**,
+donc toujours atteignable. Les doublons, à budget égal, sont écartés. La colonne `kind` vaut
+`max` ou `cible 0.25|0.50|0.75`.
+
+| | v1 | v2 |
+|---|---|---|
+| paires conservées | 6 443 | 12 157 |
+| écart moyen de a à tuile × budget fixe | 0,023 | **0,209** |
+| tuile × budget où a varie de plus de 0,05 | 18 % | **86 %** |
+| paires à plus de 25 % sous le maximum | 0 % | **28 %** |
+
+| split | max | cible 0,25 | cible 0,50 | cible 0,75 |
+|---|---|---|---|---|
+| train | 5 223 | 1 840 | 1 449 | 1 322 |
+| val_synth | 684 | 250 | 196 | 177 |
+| test_synth | 468 | 171 | 127 | 118 |
+| val (Hivernage) | 36 | 12 | 4 | 8 |
+| test (Guéliz) | 32 | 21 | 15 | 4 |
+
+Les solutions « max » sont identiques à celles de la v1 (mêmes graines). Les modèles v1 et
+leurs données sont archivés dans `experiments_v1/`.

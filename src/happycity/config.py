@@ -239,6 +239,7 @@ class PairsConfig:
     top_k: int = 3
     attempts: int = 8
     min_relative_gain: float = 0.8
+    target_fractions: list[float] = field(default_factory=list)
     seed: int = 0
     random_draws: int = 10
     synthetic_val_fraction: float = 0.1
