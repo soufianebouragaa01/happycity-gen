@@ -350,7 +350,7 @@ class TrainConfig:
 class EvalConfig:
     """Protocole d'évaluation."""
 
-    n_proposals: int = 2
+    n_proposals: int = 3
     budget_fractions: list[float] = field(default_factory=list)
     unreachable_target_offsets: list[float] = field(default_factory=list)
     split_by_reachability: bool = True

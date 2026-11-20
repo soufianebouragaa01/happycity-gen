@@ -5,6 +5,13 @@ from happycity.baselines.placement import (
     PlacementProblem,
     greedy_placement,
     random_placement,
+    targeted_greedy_placement,
 )
 
-__all__ = ["Placement", "PlacementProblem", "greedy_placement", "random_placement"]
+__all__ = [
+    "Placement",
+    "PlacementProblem",
+    "greedy_placement",
+    "random_placement",
+    "targeted_greedy_placement",
+]

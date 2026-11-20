@@ -50,7 +50,7 @@ uv run happycity show-config paths=kaggle            # chemins Kaggle
 | `happycity make-pairs` | paires avant/après (glouton stochastique), références aléatoire/glouton, découpage | 4 |
 | `happycity make-dataset` | jeu compact d'entraînement (.npz par split, motifs de desserte pour l'A400 doux) | 5 |
 | `happycity train` | entraînement d'une variante / ablation, ex. `model=C ablation=no_attention` (Kaggle : `notebooks/kaggle_train.ipynb`) | 5 |
-| `happycity evaluate` | comparaisons, ablations, figures | 6 |
+| `happycity evaluate` | métriques exactes des variantes, ablations et références (aléatoire, glouton, glouton ciblé) sur test_synth et Guéliz ; rapport `experiments/evaluation/report.md` | 6 |
 | `happycity demo` | interface de démonstration | 7 |
 
 ## Arborescence

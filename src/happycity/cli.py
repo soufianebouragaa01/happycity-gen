@@ -182,10 +182,24 @@ def train(overrides: Overrides = None) -> None:
 
 
 @app.command()
-def evaluate(overrides: Overrides = None) -> None:
-    """Compare les variantes et les références non génératives."""
-    _config(overrides)
-    _not_implemented("evaluate", 6)
+def evaluate(
+    overrides: Overrides = None,
+    runs: Annotated[str, typer.Option(help="Motif des exécutions (dossiers d'experiments).")] = "*",
+    splits: Annotated[str, typer.Option(help="Splits évalués, séparés par des virgules.")] = (
+        "test_synth,test"
+    ),
+    workers: Annotated[int | None, typer.Option(help="Processus parallèles.")] = None,
+    device: Annotated[str | None, typer.Option(help="cpu ou cuda (défaut : auto).")] = None,
+) -> None:
+    """Compare les variantes, les ablations et les références (métriques exactes)."""
+    from happycity.evaluation.pipeline import run_evaluate
+
+    cfg = _config(overrides)
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
+    out = run_evaluate(
+        cfg, runs, [s.strip() for s in splits.split(",") if s.strip()], workers, device
+    )
+    typer.echo(f"✓ évaluation : {out / 'report.md'}")
 
 
 @app.command()

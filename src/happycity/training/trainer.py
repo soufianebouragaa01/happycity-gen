@@ -1,6 +1,6 @@
 """Entraînement d'une variante (A, B, C) ou d'une ablation, et validation par époque.
 
-Sorties dans ``<experiments_dir>/<run_name>/`` :
+Sorties dans ``<experiments_dir>/seed<graine>/<run_name>/`` :
 
 * ``config.yaml`` (configuration résolue) et ``meta.json`` (commit git, versions, paramètres) ;
 * ``train_log.csv`` : termes de perte tous les ``log_every`` pas ;
@@ -50,8 +50,8 @@ def resolve_device(name: str) -> torch.device:
 
 
 def run_dir(cfg: DictConfig) -> Path:
-    """Dossier d'une exécution."""
-    return Path(cfg.paths.experiments_dir) / str(cfg.run_name)
+    """Dossier d'une exécution, rangé par graine : ``experiments/seed42/C-full-s42``."""
+    return Path(cfg.paths.experiments_dir) / f"seed{int(cfg.train.seed)}" / str(cfg.run_name)
 
 
 @dataclass

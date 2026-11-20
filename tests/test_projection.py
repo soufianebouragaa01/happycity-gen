@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from scipy.ndimage import label
 
-from happycity.projection import compose_after, network_neighbourhood, project
+from happycity.projection import compose_after, network_neighbourhood, project, validity
 
 H = W = 32
 
@@ -80,6 +80,7 @@ def test_random_maps_always_valid_and_idempotent(seed: int) -> None:
     budget = int(rng.integers(0, 200))
     res = project(prob, allowed, walk, budget)
     check_valid(res.mask, allowed, walk, budget)
+    assert validity(res.mask, allowed, walk, budget).valid
     again = project(res.mask.astype(float), allowed, walk, budget)
     np.testing.assert_array_equal(again.mask, res.mask)
     np.testing.assert_array_equal(project(prob, allowed, walk, budget).mask, res.mask)
@@ -94,3 +95,14 @@ def test_compose_after_keeps_fixed_elements() -> None:
     np.testing.assert_array_equal(after[:2], channels[:2])
     assert (after[2][added] == 1).all()
     np.testing.assert_array_equal(after[2][~added], channels[2][~added])
+
+
+def test_validity_counts_each_violation() -> None:
+    walk, allowed = scene()
+    mask = np.zeros((H, W), dtype=bool)
+    mask[1:3, 0:6] = True  # 12 px valides, contre la rue
+    mask[15:17, 10:15] = True  # 10 px dans R mais détachés
+    mask[25, 25] = True  # 1 px hors de R (et détaché)
+    v = validity(mask, allowed, walk, budget_px=20)
+    assert (v.outside_r_px, v.over_budget_px, v.detached_px) == (1, 3, 11)
+    assert not v.valid

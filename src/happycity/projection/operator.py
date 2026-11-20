@@ -105,3 +105,32 @@ def compose_after(
     k = list(channel_names).index("public_green")
     out[k] = np.maximum(out[k], np.asarray(added, dtype=np.float32))
     return out
+
+
+@dataclass(frozen=True)
+class Validity:
+    """Violations d'un masque d'ajouts (0 partout = valide)."""
+
+    outside_r_px: int  # pixels hors de la région modifiable R
+    over_budget_px: int  # pixels au-delà du budget
+    detached_px: int  # pixels de composantes qui ne touchent pas le réseau
+
+    @property
+    def valid(self) -> bool:
+        """Toutes les contraintes respectées."""
+        return self.outside_r_px == 0 and self.over_budget_px == 0 and self.detached_px == 0
+
+
+def validity(
+    mask: np.ndarray, allowed: np.ndarray, walk: np.ndarray, budget_px: int, adjacency_px: int = 1
+) -> Validity:
+    """Mesure les violations d'un masque quelconque (sortie brute, projetée, référence)."""
+    mask = np.asarray(mask, dtype=bool)
+    labels, _ = label(mask)
+    touching = np.unique(labels[mask & network_neighbourhood(walk, adjacency_px)])
+    attached = np.isin(labels, touching[touching > 0]) & mask
+    return Validity(
+        outside_r_px=int((mask & ~np.asarray(allowed, dtype=bool)).sum()),
+        over_budget_px=max(int(mask.sum()) - int(budget_px), 0),
+        detached_px=int(mask.sum() - attached.sum()),
+    )

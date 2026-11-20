@@ -12,7 +12,6 @@ from happycity.cli import app
 runner = CliRunner()
 
 COMMANDS = [  # commandes encore non implémentées (phases suivantes)
-    "evaluate",
     "demo",
 ]
 
@@ -29,6 +28,7 @@ def test_help_lists_all_commands() -> None:
         "synthesize",
         "make-dataset",
         "train",
+        "evaluate",
     ]:
         assert command in result.output
 

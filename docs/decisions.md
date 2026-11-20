@@ -183,6 +183,17 @@ Dépôt **public** : le notebook Kaggle le clone simplement, sans token.
   import est désormais local à `clip_pbf`. Ces blocages expliquent les échecs de tests
   ponctuels non reproductibles.
 
+## D18 — Évaluation (docs/evaluation.md)
+
+- Problèmes : cibles a posteriori et cibles inatteignables (glouton + 0,10 / + 0,25), avec
+  une colonne « atteignable par le glouton », qui est une estimation par le bas.
+- Métriques exactes uniquement (Dijkstra) ; E toujours avec A400 ; sorties brutes ET
+  projetées ; mêmes z pour tous les modèles.
+- Référence « glouton ciblé » : arrêt dès que A400 ≥ a. C'est la référence juste pour juger
+  la fidélité à la condition.
+- Graines : nom d'exécution suffixé (`-s42`) ; agrégation moyenne ± écart-type entre graines.
+- `rasterio < 1.4.4` et `pyarrow != 26.0.1` : DLL bloquées par Smart App Control.
+
 ## Questions ouvertes
 
 - Date exacte du jalon J1.

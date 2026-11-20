@@ -153,12 +153,15 @@ def _greedy(
     rng: np.random.Generator | None,
     top_k: int,
     method: str,
+    target_a400: float | None = None,
 ) -> Placement:
     result = _empty(problem, method)
     assert result.served is not None
     remaining = budget_px
     available = set(problem.parcels)
     while remaining > 0 and available:
+        if target_a400 is not None and result.a400 >= target_a400 - 1e-9:
+            break
         options = []
         for cid in sorted(available):
             take = min(problem.size(cid), remaining)
@@ -202,3 +205,14 @@ def greedy_placement(
         return _greedy(problem, budget_px, "ratio", rng, top_k, f"greedy_top{top_k}")
     runs = [_greedy(problem, budget_px, c, None, 1, "greedy") for c in ("ratio", "gain")]
     return max(runs, key=lambda r: (r.a400, -r.n_px))
+
+
+def targeted_greedy_placement(
+    problem: PlacementProblem, budget_px: int, target_a400: float
+) -> Placement:
+    """Glouton CIBLÉ : glouton au ratio qui s'arrête dès que A400 ≥ ``target_a400``.
+
+    Référence non générative qui, comme le GAN, reçoit la cible a. Il peut la dépasser
+    (dernier ajout) ou ne pas l'atteindre (budget épuisé, plus aucun gain).
+    """
+    return _greedy(problem, budget_px, "ratio", None, 1, "greedy_targeted", target_a400)

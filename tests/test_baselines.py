@@ -8,7 +8,12 @@ import pandas as pd
 import pytest
 from omegaconf import DictConfig
 
-from happycity.baselines import PlacementProblem, greedy_placement, random_placement
+from happycity.baselines import (
+    PlacementProblem,
+    greedy_placement,
+    random_placement,
+    targeted_greedy_placement,
+)
 from happycity.data.access_context import build_context, metric_params
 from happycity.data.layers import UrbanLayers
 from happycity.data.pairs import (
@@ -187,3 +192,14 @@ def test_tile_pairs(small_synthetic: UrbanLayers, cfg: DictConfig) -> None:
         keys = {np.packbits(masks[k]).tobytes() for k in group.index}
         assert len(keys) == len(group)
     assert budget_pixels(0.01, cfg.data) == 163
+
+
+def test_targeted_greedy_stops_at_target() -> None:
+    problem = scene()
+    low = targeted_greedy_placement(problem, 60, target_a400=0.5)
+    assert low.parcels == [0]  # 5/7 ≥ 0,5 : arrêt après le premier ajout
+    high = targeted_greedy_placement(problem, 60, target_a400=1.0)
+    assert high.a400 == pytest.approx(1.0)
+    unreachable = targeted_greedy_placement(problem, 20, target_a400=1.0)
+    assert unreachable.a400 == pytest.approx(5 / 7)  # budget insuffisant : meilleur effort
+    assert targeted_greedy_placement(problem, 60, target_a400=0.0).n_px == 0
