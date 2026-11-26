@@ -40,7 +40,12 @@ st.title("HappyCity Gen : scénarios d'espaces verts à Marrakech")
 st.caption(demo.DISCLAIMER)
 
 if not runs:
-    st.error("Aucun modèle entraîné dans `experiments/` (voir le notebook Kaggle).")
+    st.error(
+        f"Dossier cherché : `{cfg.paths.experiments_dir}`. Entraînez les modèles avec le "
+        "notebook Kaggle, ou utilisez les modèles archivés de la version 1 :\n\n"
+        "`uv run happycity demo --ui paths.experiments_dir=experiments_v1`",
+        title="Aucun modèle entraîné trouvé",
+    )
     st.stop()
 
 # --------------------------------------------------------------------------- paramètres

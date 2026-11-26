@@ -409,8 +409,22 @@ def load_config(
     schema = OmegaConf.structured(AppConfig)
     cfg = cast(DictConfig, OmegaConf.merge(schema, raw))
     OmegaConf.resolve(cfg)
+    _anchor_paths(cfg, directory.parent)
     OmegaConf.set_readonly(cfg, True)
     return cfg
+
+
+def _anchor_paths(cfg: DictConfig, root: Path) -> None:
+    """Chemins relatifs → absolus, rattachés à la racine du projet (dossier parent de configs/).
+
+    Les commandes donnent ainsi le même résultat quel que soit le dossier d'où on les lance
+    (par ex. depuis le dossier parent du dépôt). Les chemins déjà
+    absolus (Kaggle, variables d'environnement, surcharges) sont conservés.
+    """
+    for key in list(cfg.paths.keys()):
+        value = Path(str(cfg.paths[key]))
+        if not value.anchor:  # « /kaggle/… » a une racine (absolu sous Linux) : on n'y touche pas
+            cfg.paths[key] = os.path.normpath(root / value)
 
 
 def to_dict(cfg: DictConfig) -> dict[str, Any]:

@@ -7,6 +7,8 @@ contextes et checkpoints locaux nécessaires). Le notebook n'appelle que
 
 from __future__ import annotations
 
+import subprocess
+import sys
 from pathlib import Path
 
 import nbformat
@@ -39,6 +41,7 @@ from pathlib import Path
 
 os.chdir(Path.cwd().parent if Path.cwd().name == "notebooks" else Path.cwd())
 import pandas as pd
+
 from happycity import demo
 from happycity.config import load_config
 
@@ -125,9 +128,7 @@ l'A400 obtenu suivrait la diagonale grise, comme le fait (par paliers) le glouto
     ),
     (
         "code",
-        """import matplotlib.pyplot as plt
-
-row = tiles.set_index("tile_id").loc["synth_00545"]
+        """row = tiles.set_index("tile_id").loc["synth_00545"]
 targets = [0.75, 0.80, 0.85, 0.90, 0.95, 1.00]
 rows = []
 for a in targets:
@@ -198,6 +199,8 @@ def main() -> None:
     ).execute()
     out = ROOT / "notebooks" / "demo.ipynb"
     nbformat.write(nb, out)
+    # Même style que le reste du dépôt (la CI lance « ruff format --check . »).
+    subprocess.run([sys.executable, "-m", "ruff", "format", "-q", str(out)], check=False)
     print("écrit :", out)
 
 
