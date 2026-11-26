@@ -18,7 +18,7 @@ jobs:
           enable-cache: true
           python-version: ${{ matrix.python-version }}
       - name: Installer l'environnement (torch CPU sur Linux)
-        run: uv sync --locked
+        run: uv sync --locked --all-extras   # extras : Streamlit (interface testée), Jupyter
       - name: Ruff (lint + format)
         run: |
           uv run ruff check .
