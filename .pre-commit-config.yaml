@@ -8,21 +8,25 @@ repos:
       - id: check-toml
       - id: check-added-large-files
         args: ["--maxkb=1024"]
+        exclude: ^docs/rapport_soutenance\.pdf$   # rapport de soutenance (2,5 Mo, figures incluses)
       - id: detect-private-key
 
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.6
-    hooks:
-      - id: ruff
-        args: ["--fix"]
-      - id: ruff-format
-
-  # mypy s'exécute dans l'environnement uv (dépendances réelles disponibles).
+  # ruff et mypy s'exécutent dans l'environnement uv : mêmes versions que la CI (uv.lock).
   - repo: local
     hooks:
+      - id: ruff
+        name: ruff (lint)
+        entry: uv run python -m ruff check --fix
+        language: system
+        types_or: [python, jupyter]
+      - id: ruff-format
+        name: ruff (format)
+        entry: uv run python -m ruff format
+        language: system
+        types_or: [python, jupyter]
       - id: mypy
         name: mypy
-        entry: uv run mypy
+        entry: uv run python -m mypy   # python -m : contourne le blocage de mypy.exe par Windows
         language: system
         types: [python]
         pass_filenames: false
