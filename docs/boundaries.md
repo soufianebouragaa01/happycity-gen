@@ -39,9 +39,9 @@ pour le découpage train/val/test.
 - Guéliz (test) et Hivernage (val) sont contigus dans la réalité : on sacrifie la bande de
   400 m qui les sépare (autour de l'avenue Hassan II) pour respecter ce tampon.
 
-## À valider
+## Validation
 
-La position de **Mabrouka** repose sur un seul point d'intérêt. Merci de vérifier sur
-`data/interim/coverage/overview.png` et `zone_mabrouka.png`. Pour corriger, modifier
-`ZONES` dans `scripts/make_boundaries.py`, relancer le script puis
+La position de **Mabrouka** repose sur un seul point d'intérêt. Elle a été **validée par
+l'utilisateur le 26/11/2026** (D21), après examen de `zone_mabrouka.png`. Pour la modifier
+un jour : changer `ZONES` dans `scripts/make_boundaries.py`, relancer le script puis
 `happycity extract -d mabrouka --force`.

@@ -215,10 +215,15 @@ Dépôt **public** : le notebook Kaggle le clone simplement, sans token.
   et leur jeu compact. Réentraînement complet sur Kaggle (13 exécutions), puis réévaluation.
 - Notebook Kaggle : `RUNS = (variante, ablation, graines)`, une seule version pour tout.
 
+## D21 — Questions tranchées (26/11/2026, par l'utilisateur)
+
+- **Zone Mabrouka** : emplacement **validé** par l'utilisateur (quartier résidentiel le long
+  de la voie ferrée, friche centrale, zone industrielle au nord).
+- **`landuse=village_green`** : **non compté** comme espace vert public. Les occurrences
+  observées sont des oliveraies et vergers (Ménara), pas des espaces aménagés.
+- **Dépôt GitHub** : public, https://github.com/soufianebouragaa01/happycity-gen
+  (renseigné dans le notebook Kaggle).
+
 ## Questions ouvertes
 
-- Date exacte du jalon J1.
-- Adresse du dépôt GitHub public (pseudo) : à renseigner dans `notebooks/kaggle_train.ipynb`.
-- Position de la zone Mabrouka (un seul repère OSM) : à valider visuellement.
-- Faut-il compter `landuse=village_green` (pelouses publiques) ? Non compté pour l'instant ;
-  les occurrences observées sont dans les oliveraies de la Ménara.
+- Date exacte du jalon J1 : laissée à `[JJ/MM/2026]`, à compléter par l'utilisateur.
